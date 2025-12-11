@@ -11,9 +11,13 @@ class CountrySearch extends Component
 
     public function render()
     {
-        $countries = $this->search === ''
-            ? Country::orderBy('name')->paginate(15)
-            : Country::search($this->search)->get();
+        if ($this->search !== '') {
+            // Usa Algolia solo si hay texto
+            $countries = Country::search($this->search)->get();
+        } else {
+            // Si no hay búsqueda → carga directo de la base de datos
+            $countries = Country::orderBy('name')->paginate(20);
+        }
 
         return view('livewire.country-search', [
             'countries' => $countries
