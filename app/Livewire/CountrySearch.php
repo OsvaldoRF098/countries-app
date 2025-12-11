@@ -1,5 +1,4 @@
 <?php
-<?php
 
 namespace App\Livewire;
 
@@ -12,18 +11,12 @@ class CountrySearch extends Component
 
     public function render()
     {
-        // SIEMPRE carga de la base de datos (249 países)
-        $query = Country::query();
+        $countries = $this->search === ''
+            ? Country::orderBy('name')->paginate(15)
+            : Country::search($this->search)->get();
 
-        if (filled($this->search)) {
-            // Solo si hay texto → filtra en DB (o puedes usar Algolia si quieres)
-            $query->where('name', 'ilike', "%{$this->search}%")
-                  ->orWhere('capital', 'ilike', "%{$this->search}%")
-                  ->orWhere('region', 'ilike', "%{$this->search}%");
-        }
-
-        $countries = $query->orderBy('name')->paginate(20);
-
-        return view('livewire.country-search', compact('countries'));
+        return view('livewire.country-search', [
+            'countries' => $countries
+        ]);
     }
 }
