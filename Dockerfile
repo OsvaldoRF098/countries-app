@@ -1,3 +1,4 @@
+```dockerfile
 FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
@@ -21,6 +22,13 @@ RUN npm ci && npm run build
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Exponemos el puerto que Railway nos da
 EXPOSE $PORT
 
-CMD php artisan key:generate --force && php artisan migrate --force && php artisan scout:import "App\\Models\\Country" && php artisan serve --host=0.0.0.0 --port=$PORT
+# INICIA EL SERVIDOR PRIMERO → luego ejecuta lo demás en background
+CMD php artisan serve --host=0.0.0.0 --port=$PORT & \
+    sleep 5 && \
+    php artisan key:generate --force && \
+    php artisan migrate --force --no-interaction && \
+    php artisan scout:import "App\\Models\\Country" --quiet && \
+    wait
