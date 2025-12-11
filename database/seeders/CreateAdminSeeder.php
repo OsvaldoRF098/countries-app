@@ -22,6 +22,7 @@ class CreateAdminSeeder extends Seeder
             ]
         );
 
+        // Esto deja una línea en los Deploy Logs confirmando que el admin se creó
         Log::info('CreateAdminSeeder: admin creado o actualizado -> ' . $user->email);
     }
 }

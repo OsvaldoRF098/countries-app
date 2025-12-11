@@ -15,36 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Mantén tu factory de prueba si lo quieres
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
 
-<?php
-
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
-
-class CreateAdminSeeder extends Seeder
-{
-    public function run()
-    {
-        $user = User::updateOrCreate(
-            ['email' => 'osvaldoramirezflores098@gmail.com'],
-            [
-                'name' => 'Admin Temporal',
-                'email_verified_at' => now(),
-                'password' => Hash::make('Osvaldo1'),
-                'remember_token' => Str::random(10),
-            ]
-        );
-
-        Log::info('CreateAdminSeeder: admin creado o actualizado -> ' . $user->email);
-    }
-}
-
-
+        // Llamada con nombre de clase totalmente cualificado (evita ambigüedades)
+        $this->call([
+            \Database\Seeders\CreateAdminSeeder::class,
+        ]);
     }
 }
