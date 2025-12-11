@@ -21,9 +21,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Llamada con nombre de clase totalmente cualificado (evita ambigüedades)
-        $this->call([
-            \Database\Seeders\CreateAdminSeeder::class,
-        ]);
-    }
+
+}
 }

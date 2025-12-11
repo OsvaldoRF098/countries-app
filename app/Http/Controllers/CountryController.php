@@ -8,22 +8,22 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class CountryController extends Controller
 {
-    public function index(Request $request)
-    {
-        $search = $request->get('search');
+public function index(Request $request)
+{
+    $query = Country::query();
 
-        $query = Country::query();
-
-        if ($search) {
-            $query->where('name', 'ilike', "%{$search}%")
-                ->orWhere('capital', 'ilike', "%{$search}%")
-                ->orWhere('region', 'ilike', "%{$search}%");
-        }
-
-        $countries = $query->orderBy('name')->paginate(20);
-
-        return view('countries.index', compact('countries', 'search'));
+    // ← SOLO aplica filtro si realmente hay texto
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where('name', 'LIKE', "%{$search}%")
+              ->orWhere('capital', 'LIKE', "%{$search}%")
+              ->orWhere('region', 'LIKE', "%{$search}%");
     }
+
+    $countries = $query->paginate(15); // o 10, 25, el número que prefieras
+
+    return view('countries.index', compact('countries'));
+}
 
     public function create()
     {
