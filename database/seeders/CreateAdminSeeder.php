@@ -6,19 +6,22 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class CreateAdminSeeder extends Seeder
 {
     public function run()
     {
-        User::updateOrCreate(
+        $user = User::updateOrCreate(
             ['email' => 'osvaldoramirezflores098@gmail.com'],
             [
-                'name' => 'Admin',
+                'name' => 'Admin Temporal',
                 'email_verified_at' => now(),
-                'password' => Hash::make('Osvaldo1'), // contraseña que vas a usar
+                'password' => Hash::make('Osvaldo1'),
                 'remember_token' => Str::random(10),
             ]
         );
+
+        Log::info('CreateAdminSeeder: admin creado o actualizado -> ' . $user->email);
     }
 }

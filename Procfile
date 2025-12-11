@@ -1,1 +1,1 @@
-web: bash -lc "php artisan migrate --force && php artisan db:seed --class=Database\\Seeders\\CreateAdminSeeder --force && php artisan optimize:clear && php artisan config:cache && chmod -R 775 storage bootstrap/cache && php artisan serve --host=0.0.0.0 --port=8080"
+web: bash -lc "composer dump-autoload && php artisan migrate --force && php artisan db:seed --class=Database\\Seeders\\CreateAdminSeeder --force && php artisan optimize:clear && php artisan config:cache && chmod -R 775 storage bootstrap/cache && php artisan serve --host=0.0.0.0 --port=8080"
