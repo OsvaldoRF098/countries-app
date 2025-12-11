@@ -3,6 +3,7 @@
 use App\Http\Controllers\CountryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Jetstream\Http\Controllers\Livewire\RegisteredUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,9 +35,9 @@ Route::get('/login-normal', function () {
 });
 
 // Registro manual (funciona aunque Jetstream esté capado)
-Route::get('/register', [\Laravel\Jetstream\Http\Controllers\Livewire\RegisteredUserController::class, 'create'])
+Route::get('/register', [RegisteredUserController::class, 'create'])
     ->name('register');
-Route::post('/register', [\Laravel\Jetstream\Http\Controllers\Livewire\RegisteredUserController::class, 'store']);
+Route::post('/register', [RegisteredUserController::class, 'store']);
 
 // ---------------------------------------------------------------------
 // RUTAS PROTEGIDAS (necesitan login)
