@@ -1,22 +1,58 @@
-# Imagen oficial de Laravel para Railway (ya tiene Composer, nginx, php-fpm83, todo)
-FROM dunglas/frankenphp
+FROM php:8.3-fpm-alpine
 
-# Cambia al directorio de trabajo
+# Instala Composer y Node.js
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    curl \
+    git \
+    libpng libjpeg-turbo freetype libzip libpq \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && apk add --no-cache nodejs npm \
+    && apk add --no-cache --virtual .build-deps \
+       $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev postgresql-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql gd zip \
+    && apk del .build-deps
+
+# Copia código
 WORKDIR /app
-
-# Copia tu código
 COPY . .
 
-# Instala dependencias
-RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts \
-    && composer dump-autoload --optimize \
-    && npm install && npm run build && rm -rf node_modules
+# Dependencias
+RUN composer install --optimize-autoloader --no-dev --no-interaction
+RUN npm install && npm run build && rm -rf node_modules
 
 # Permisos
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Expose el puerto que Railway espera
-ENV SERVER_NAME=:${PORT:-3000}
+# Nginx config
+RUN echo 'server { \
+    listen 8080; \
+    root /app/public; \
+    index index.php; \
+    location / { try_files $uri $uri/ /index.php?$query_string; } \
+    location ~ \.php$ { \
+        fastcgi_pass 127.0.0.1:9000; \
+        fastcgi_index index.php; \
+        include fastcgi_params; \
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+    } \
+}' > /etc/nginx/http.d/default.conf
 
-# Comando de arranque (FrankenPHP ya sirve Laravel perfecto)
-CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=${PORT:-3000}"]
+# Supervisor para arrancar todo
+RUN echo '[supervisord] \
+nodaemon=true \
+\
+[program:php-fpm] \
+command=/usr/local/sbin/php-fpm83 \
+autostart=true \
+autorestart=true \
+\
+[program:nginx] \
+command=/usr/sbin/nginx -g "daemon off;" \
+autostart=true \
+autorestart=true' > /etc/supervisord.conf
+
+EXPOSE 8080
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
