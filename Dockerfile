@@ -1,17 +1,21 @@
 FROM php:8.3-fpm-alpine
 
-# Instala nginx y extensiones necesarias
-RUN apk add --no-cache nginx libpq nodejs npm \
+# Instala dependencias
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    libpng libjpeg-turbo freetype libzip libpq \
+    nodejs npm \
     && apk add --no-cache --virtual .build-deps \
        $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev postgresql-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_pgsql gd zip \
+    && docker-php-ext-install pdo pdo_pgsql gd zip exif \
     && apk del .build-deps
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Código
+# Copia código
 WORKDIR /app
 COPY . .
 
@@ -36,5 +40,19 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/http.d/default.conf
 
-# Arranca todo
-CMD php-fpm -D && nginx -g "daemon off;"
+# Supervisor config
+RUN echo '[supervisord] \
+nodaemon=true \
+\
+[program:php-fpm] \
+command=/usr/local/sbin/php-fpm83 \
+autostart=true \
+autorestart=true \
+\
+[program:nginx] \
+command=/usr/sbin/nginx -g "daemon off;" \
+autostart=true \
+autorestart=true' > /etc/supervisord.conf
+
+EXPOSE 8080
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
