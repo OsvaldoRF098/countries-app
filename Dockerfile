@@ -9,10 +9,10 @@ RUN apt-get update && apt-get install -y \
 # Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instala Node.js 20 + npm correctamente (esto arregla el error)
+# Instala Node.js 20 + npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
-    && npm install -g npm@latest  # Actualiza npm si es necesario
+    && npm install -g npm@latest
 
 # Directorio de trabajo
 WORKDIR /var/www/html
@@ -23,14 +23,15 @@ COPY . .
 # Instala dependencias PHP
 RUN composer install --optimize-autoloader --no-dev --no-interaction
 
-# Instala dependencias JS y build (ahora npm funciona)
+# Instala dependencias JS y build
 RUN npm ci && npm run build
 
-# Genera key, migra y importa a Algolia (en producción usa variables de Railway)
-RUN php artisan key:generate --force
+# Permisos para Laravel (evita errores en storage/logs)
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
 
-# Expone el puerto (Railway usa $PORT, pero lo sobreescribimos en railway.json)
+# Expone el puerto
 EXPOSE ${PORT:-8000}
 
-# Comando de inicio (usa artisan serve para simplicidad)
+# Comando de inicio (migra y seed en runtime, no en build)
 CMD php artisan migrate --force && php artisan scout:import "App\Models\Country" --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
