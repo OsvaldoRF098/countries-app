@@ -9,18 +9,18 @@ class CountrySearch extends Component
 {
     public $search = '';
 
-    public function render()
-    {
-        if ($this->search !== '') {
-            // Usa Algolia solo si hay texto
-            $countries = Country::search($this->search)->get();
-        } else {
-            // Si no hay búsqueda → carga directo de la base de datos
-            $countries = Country::orderBy('name')->paginate(20);
-        }
+        public function render()
+        {
+            $query = Country::query();
 
-        return view('livewire.country-search', [
-            'countries' => $countries
-        ]);
-    }
+            if ($this->search) {
+                $query->where('name', 'ilike', "%{$this->search}%")
+                    ->orWhere('capital', 'ilike', "%{$this->search}%")
+                    ->orWhere('region', 'ilike', "%{$this->search}%");
+            }
+
+            $countries = $query->orderBy('name')->paginate(20);
+
+            return view('livewire.country-search', compact('countries'));
+        }
 }
