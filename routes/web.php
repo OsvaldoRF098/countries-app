@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/up', function () {
     return response('OK', 200);
-})->name('health');
+});
 
 // Ruta raíz: redirige al login si no está autenticado
 Route::get('/', function () {
