@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Lista de Países ({{ $countries->total() }})</h4>
+                    <h4 class="mb-0">Lista de Países ({{ App\Models\Country::count() }}) – FORZADO</h4>
                     <div>
                         <a href="{{ route('countries.pdf') }}" class="btn btn-danger btn-sm mr-2">PDF</a>
                         <a href="{{ route('countries.create') }}" class="btn btn-light btn-sm">Nuevo País</a>
@@ -11,7 +11,7 @@
                 </div>
 
                 <div class="card-body">
-                    <!-- Buscador simple (sin Livewire por ahora) -->
+                    <!-- Buscador (lo dejamos pero no afecta) -->
                     <form method="GET" class="mb-4">
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" placeholder="Buscar país, capital o región..." value="{{ request('search') }}">
@@ -20,10 +20,6 @@
                             </div>
                         </div>
                     </form>
-
-                    @if(session('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
 
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -38,7 +34,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($countries as $country)
+                                @php
+                                    // Ignoramos lo que venga del controlador y traemos todo directo de la DB
+                                    $paisesForzados = App\Models\Country::paginate(20);
+                                @endphp
+
+                                @forelse($paisesForzados as $country)
                                 <tr>
                                     <td>
                                         @if($country->flag_url)
@@ -59,15 +60,16 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="6" class="text-center">No hay países registrados</td></tr>
+                                <tr><td colspan="6" class="text-center">No hay países (imposible)</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    {{ $countries->appends(request()->query())->links() }}
+                    {{ $paisesForzados->appends(request()->query())->links() }}
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </x-app-layout>
