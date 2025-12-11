@@ -12,14 +12,15 @@ class CountryController extends Controller
     {
         $search = $request->get('search');
 
-        $countries = Country::query()
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'ilike', "%{$search}%")
-                             ->orWhere('capital', 'ilike', "%{$search}%")
-                             ->orWhere('region', 'ilike', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(15);
+        $query = Country::query();
+
+        if ($search) {
+            $query->where('name', 'ilike', "%{$search}%")
+                ->orWhere('capital', 'ilike', "%{$search}%")
+                ->orWhere('region', 'ilike', "%{$search}%");
+        }
+
+        $countries = $query->orderBy('name')->paginate(20);
 
         return view('countries.index', compact('countries', 'search'));
     }
