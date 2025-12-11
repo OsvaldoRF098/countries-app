@@ -12,9 +12,6 @@ use Laravel\Jetstream\Http\Controllers\Livewire\RegisteredUserController;
 */
 
 // Healthcheck para Railway
-Route::get('/up', function () {
-    return response('OK', 200);
-});
 
 // Ruta raíz
 Route::get('/', fn() => redirect()->route('login'));
@@ -59,3 +56,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/countries/create', \App\Livewire\CountryCreate::class)->name('countries.create');
     Route::get('/countries/{country}/edit', \App\Livewire\CountryEdit::class)->name('countries.edit');
 });
+Route::get('/up', fn() => 'OK');
