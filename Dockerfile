@@ -1,21 +1,22 @@
-# Usamos la imagen oficial de Railway para Laravel (ya tiene todo instalado)
-FROM railwayapp/php:8.3
+# Imagen oficial de Laravel para Railway (ya tiene Composer, nginx, php-fpm83, todo)
+FROM dunglas/frankenphp
 
-# Cambiamos al directorio de trabajo
+# Cambia al directorio de trabajo
 WORKDIR /app
 
-# Copiamos el código
+# Copia tu código
 COPY . .
 
-# Instalamos dependencias
-RUN composer install --optimize-autoloader --no-dev --no-interaction
-RUN npm install && npm run build && rm -rf node_modules
+# Instala dependencias
+RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts \
+    && composer dump-autoload --optimize \
+    && npm install && npm run build && rm -rf node_modules
 
 # Permisos
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Exponemos el puerto que Railway espera
-EXPOSE $PORT
+# Expose el puerto que Railway espera
+ENV SERVER_NAME=:${PORT:-3000}
 
-# Comando de arranque que Railway entiende
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Comando de arranque (FrankenPHP ya sirve Laravel perfecto)
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=${PORT:-3000}"]
