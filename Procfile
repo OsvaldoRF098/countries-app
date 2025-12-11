@@ -1,0 +1,1 @@
+web: bash -c "php artisan key:generate --force && php artisan migrate --force --no-interaction php artisan scout:import 'App\Models\Country' --quiet php artisan config:cache php artisan route:cache php artisan view:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
